@@ -17,5 +17,10 @@ b. The `call()` method should compute the mean *μ* and the standard deviation
    term (small constant to avoid division by zero, e.g., 0.001).
 
 c. Ensure that your custom layer produces the same (or very nearly the same)
-   output as the `keras.layers.LyerNormalization` layer.
+   output as the `keras.layers.LayerNormalization` layer.
 """
+
+import tensorflow as tf
+
+class Normalization(tf.keras.layers.Layer):
+   pass
