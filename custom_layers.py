@@ -20,7 +20,39 @@ c. Ensure that your custom layer produces the same (or very nearly the same)
    output as the `keras.layers.LayerNormalization` layer.
 """
 
+from numpy import dtype, float32
 import tensorflow as tf
 
 class Normalization(tf.keras.layers.Layer):
-   pass
+   def __init__(self, ε=1e-3, **kwargs):
+      self.ε = ε
+      super().__init__(**kwargs)
+
+   def build(self, batch_input_shape):
+      self.α = self.add_weight(
+         name="α",
+         shape=batch_input_shape[-1],
+         dtype=tf.float32,
+         initializer=tf.ones_initializer
+      )
+      self.β = self.add_weight(
+         name="β",
+         shape=batch_input_shape[-1],
+         dtype=tf.float32,
+         initializer=tf.zeros_initializer
+      )
+
+      # IMPORTANT: the super call must be at the end of the method
+      super().build(batch_input_shape)
+
+   def call(self, X):
+      μ, σ = tf.nn.moments(X, axes=-1, keepdims=True)
+      return self.α * (X - μ) / tf.sqrt(σ + self.ε) + self.β
+
+   def compute_output_shape(self, batch_input_shape):
+        return batch_input_shape
+
+   def get_config(self):
+        base_config = super().get_config()
+        return {**base_config, "ε": self.ε}
+
