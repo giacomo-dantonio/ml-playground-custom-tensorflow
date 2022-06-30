@@ -23,20 +23,20 @@ c. Ensure that your custom layer produces the same (or very nearly the same)
 from numpy import dtype, float32
 import tensorflow as tf
 
-class Normalization(tf.keras.layers.Layer):
-   def __init__(self, ε=1e-3, **kwargs):
-      self.ε = ε
+class LayerNormalization(tf.keras.layers.Layer):
+   def __init__(self, eps=1e-3, **kwargs):
+      self.eps = eps
       super().__init__(**kwargs)
 
    def build(self, batch_input_shape):
-      self.α = self.add_weight(
-         name="α",
+      self.alpha = self.add_weight(
+         name="alpha",
          shape=batch_input_shape[-1],
          dtype=tf.float32,
          initializer=tf.ones_initializer
       )
-      self.β = self.add_weight(
-         name="β",
+      self.beta = self.add_weight(
+         name="beta",
          shape=batch_input_shape[-1],
          dtype=tf.float32,
          initializer=tf.zeros_initializer
@@ -46,13 +46,12 @@ class Normalization(tf.keras.layers.Layer):
       super().build(batch_input_shape)
 
    def call(self, X):
-      μ, σ = tf.nn.moments(X, axes=-1, keepdims=True)
-      return self.α * (X - μ) / tf.sqrt(σ + self.ε) + self.β
+      mean, var = tf.nn.moments(X, axes=-1, keepdims=True)
+      return self.alpha * (X - mean) / tf.sqrt(var + self.eps) + self.beta
 
    def compute_output_shape(self, batch_input_shape):
         return batch_input_shape
 
    def get_config(self):
         base_config = super().get_config()
-        return {**base_config, "ε": self.ε}
-
+        return {**base_config, "eps": self.eps}

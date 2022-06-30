@@ -18,7 +18,7 @@ class TestLayerNormalization(unittest.TestCase):
         k_layer = tf.keras.layers.LayerNormalization()
         k_layer.build(shape)
 
-        c_layer = custom_layers.Normalization()
+        c_layer = custom_layers.LayerNormalization()
         c_layer.build(shape)
 
         for _ in range(10):
